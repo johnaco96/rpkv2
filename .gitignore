@@ -1,0 +1,47 @@
+# ---- OS / IDE ----
+.DS_Store
+.idea/
+.vscode/
+
+# ---- Rust ----
+/target/
+/**/target/
+Cargo.lock
+
+# ---- C/C++ build outputs ----
+/build/
+/bin/
+/obj/
+/out/
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+
+# ---- Logs & dumps ----
+*.log
+*.tmp
+*.swp
+*.core
+
+# ---- Keys & certs (keep secrets out) ----
+*.key
+*.pem
+*.der
+*.crt
+*.pub
+*.csv
+certs/
+secrets/
+**/private_keys/
+**/keys/
+
+# ---- Large/generated artifacts ----
+ledger/*.shred
+*.shred
+
+# ---- Node (if any subtools/scripts) ----
+node_modules/
+dist/
