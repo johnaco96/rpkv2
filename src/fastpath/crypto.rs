@@ -1,11 +1,11 @@
 use anyhow::Result;
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, unbounded};
 use std::thread::{self, JoinHandle};
 
 #[cfg(feature = "ed25519")]
 pub mod ed25519_backend {
     use anyhow::Result;
-    use ed25519_dalek::{Signature, VerifyingKey, Verifier};
+    use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
     /// Verify a batch; returns per-item booleans.
     /// If the crate feature `dalek_batch` is enabled, try the fast batch path first,
@@ -22,9 +22,11 @@ pub mod ed25519_backend {
             }
         }
         // Fallback: check each individually.
-        keys.iter().zip(msgs.iter()).zip(sigs.iter()).map(|((k, m), s)| {
-            k.verify(m, s).is_ok()
-        }).collect()
+        keys.iter()
+            .zip(msgs.iter())
+            .zip(sigs.iter())
+            .map(|((k, m), s)| k.verify(m, s).is_ok())
+            .collect()
     }
 }
 
@@ -80,7 +82,12 @@ impl CryptoService {
             sigs.push(*it.sig);
         }
         let (rsp_tx, rsp_rx) = unbounded();
-        self.tx.send(VerifyBatchOwned { keys, msgs, sigs, rsp: rsp_tx })?;
+        self.tx.send(VerifyBatchOwned {
+            keys,
+            msgs,
+            sigs,
+            rsp: rsp_tx,
+        })?;
         let out = rsp_rx.recv()?;
         Ok(out)
     }
@@ -93,9 +100,13 @@ fn run_worker(rx: Receiver<VerifyBatchOwned>) {
 
         while let Ok(b) = rx.recv() {
             // Map to dalek types
-            let keys: Vec<VerifyingKey> = b.keys.iter().map(|k| VerifyingKey::from_bytes(k).unwrap()).collect();
+            let keys: Vec<VerifyingKey> = b
+                .keys
+                .iter()
+                .map(|k| VerifyingKey::from_bytes(k).unwrap())
+                .collect();
             let msgs: Vec<&[u8]> = b.msgs.iter().map(|m| m.as_slice()).collect();
-            let sigs: Vec<Signature> = b.sigs.iter().map(|s| Signature::from_bytes(s).unwrap()).collect();
+            let sigs: Vec<Signature> = b.sigs.iter().map(|s| Signature::from_bytes(s)).collect();
 
             let ok = crate::fastpath::crypto::ed25519_backend::verify_batch(&keys, &msgs, &sigs);
             let _ = b.rsp.send(ok);

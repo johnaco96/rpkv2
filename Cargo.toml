@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-ed25519 = []          # enable real ed25519 verify
+ed25519 = ["dep:ed25519-dalek"]          # enable real ed25519 verify
 dalek_batch = []
 afxdp = ["xsk-rs"]   # or "xdp"
 dpdk  = ["capsule"]  # optional
