@@ -6,7 +6,9 @@
 # ---- Rust ----
 /target/
 /**/target/
-Cargo.lock
+
+# Keep Cargo.lock for reproducible application/binary builds.
+# Do NOT ignore Cargo.lock unless this repo is a pure library crate.
 
 # ---- C/C++ build outputs ----
 /build/
@@ -20,28 +22,50 @@ Cargo.lock
 *.dylib
 *.exe
 
-# ---- Logs & dumps ----
+# ---- Logs & temporary files ----
 *.log
 *.tmp
 *.swp
 *.core
 
-# ---- Keys & certs (keep secrets out) ----
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+secrets/
+certs/
+**/private_keys/
+**/keys/
+
+# ---- Keys & certs ----
 *.key
 *.pem
 *.der
 *.crt
-*.pub
-*.csv
-certs/
-secrets/
-**/private_keys/
-**/keys/
+*.p12
+*.pfx
+*.jks
 
-# ---- Large/generated artifacts ----
+
+*.pub
+
+# ---- Benchmark output ----
+*.csv
+benchmarks/results/
+benchmarks/local/
+benchmarks/cloud-2node/
+benchmarks/cloud-3node/
+
+# Keep placeholder files if needed
+!benchmarks/results/.gitkeep
+!benchmarks/local/.gitkeep
+!benchmarks/cloud-2node/.gitkeep
+!benchmarks/cloud-3node/.gitkeep
+
+# ---- Ledger / generated artifacts ----
 ledger/*.shred
 *.shred
 
-# ---- Node (if any subtools/scripts) ----
+# ---- Node, if any subtools/scripts ----
 node_modules/
 dist/
