@@ -115,6 +115,7 @@ fn main() -> Result<()> {
                     continue;
                 }
 
+                #[cfg_attr(not(feature = "ed25519"), allow(unused_mut))]
                 let mut verified_this = false;
                 if matches!(args.verify, Toggle::On) {
                     #[cfg(feature = "ed25519")]

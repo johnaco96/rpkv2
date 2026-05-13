@@ -79,7 +79,8 @@ fn main() -> Result<()> {
     while Instant::now() < deadline {
         let mut buf = vec![0u8; HEADER_LEN + args.payload];
 
-        let header = Header {
+        #[cfg_attr(not(feature = "ed25519"), allow(unused_mut))]
+        let mut header = Header {
             v: 1,
             msg_type: 1,
             flags: if matches!(args.signing, Toggle::On) {
