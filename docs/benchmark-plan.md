@@ -38,6 +38,18 @@ Behavior:
 - Optional Ed25519 signature verification for signed packets.
 - Auto-stops after idle period once packets have been observed.
 
+
+### `bench_summary`
+
+Usage:
+- `cargo run --bin bench_summary -- --tx sender.csv --rx receiver.csv`
+- Optional: `--payload 256` to infer throughput when missing, and `--out summary.json` to write machine-readable output.
+
+Behavior:
+- Loads one-row summaries from `fast_tx` and `fast_rx` CSV outputs.
+- Reports packet counts, estimated loss, duration, effective PPS, throughput Mbps, and latency quantiles when present.
+- Handles missing optional columns by reporting `n/a`; errors clearly on missing files or malformed required columns.
+
 ## CSV Outputs
 
 `fast_tx` summary:
