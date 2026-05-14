@@ -46,7 +46,7 @@ CMD=(
   --target "${RECEIVER}:9000"
   --pps "$PPS"
   --payload "$PAYLOAD"
-  --duration "$DURATION"
+  --duration-secs "$DURATION"
   --signing "$SIGNING"
   --out-csv "$OUT_CSV"
 )
