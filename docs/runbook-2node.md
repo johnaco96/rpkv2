@@ -4,6 +4,16 @@ This runbook covers a **two-node signed UDP validator-ingress benchmark** using 
 
 > This setup is for benchmark experimentation only. Do **not** treat results as production validator performance.
 
+## 0) Security preflight (public-node benchmark)
+
+Before provisioning or cloning:
+
+- Review `docs/public-benchmark-security.md` and treat it as a required checklist.
+- Use **disposable** cloud nodes dedicated to this benchmark window.
+- Confirm inbound rules are restrictive before first SSH login.
+- Use temporary, least-privilege repository access and remove it after testing.
+- Do not place wallet keys, validator identity keys, or other private credentials on benchmark nodes.
+
 ## 1) Provision nodes
 
 Create two Ubuntu VMs (22.04 or 24.04):
