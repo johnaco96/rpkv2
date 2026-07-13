@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use bloomfilter::Bloom;
 use std::time::{Duration, Instant};
 
@@ -207,7 +207,7 @@ mod tests {
 
     #[test]
     fn replay_filter_basic() {
-        let mut rf = ReplayFilter::new(1 << 20, 1e-6, 1024, 100);
+        let mut rf = ReplayFilter::new(1 << 20, 1e-6, 16, 100);
         assert!(rf.accept(100, 1));
         assert!(!rf.accept(100, 1)); // replay
         assert!(rf.accept(101, 1)); // new slot
