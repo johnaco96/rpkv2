@@ -1,0 +1,74 @@
+[package]
+name = "rpkv2"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Research prototype for mutually authenticated raw-public-key QUIC validator networking"
+build = "build.rs"
+
+[[bin]]
+name = "server"
+path = "bins/server.rs"
+
+[[bin]]
+name = "client"
+path = "bins/client.rs"
+
+[[bin]]
+name = "bench_handshake"
+path = "bins/bench_handshake.rs"
+
+[[bin]]
+name = "bench_dgram"
+path = "bins/bench_dgram.rs"
+
+[[bin]]
+name = "bench_stream"
+path = "bins/bench_stream.rs"
+
+[[bin]]
+name = "demo"
+path = "bins/demo.rs"
+
+[[bin]]
+name = "bench_handshake_tls"
+path = "bins/bench_handshake_tls.rs"
+
+[[bin]]
+name = "server_tls"
+path = "bins/server_tls.rs"
+
+[features]
+default = ["ed25519"]
+ed25519 = ["dep:ed25519-dalek"]          # enable real ed25519 verify
+insecure_demo = []                       # explicit stub crypto for demo-only builds
+dalek_batch = ["ed25519", "ed25519-dalek/batch"]
+
+[dependencies]
+anyhow = "1"
+tokio = { version = "1.47", features = ["rt-multi-thread", "macros", "io-util", "signal"] }
+quinn = { version = "0.11.8", default-features = false, features = ["runtime-tokio", "rustls", "platform-verifier", "log", "bloom"] }
+bytes = "1"
+clap = { version = "4.5", features = ["derive"] }
+csv = "1.3"
+hdrhistogram = "7"
+ed25519-dalek = { version = "2", default-features = false, features = ["alloc", "rand_core"], optional = true }
+core_affinity = "0.8"
+crossbeam-queue = "0.3"
+bloomfilter = "1.0"
+blake3 = "1"
+rand = "0.8"
+socket2 = { version = "0.5", features = ["all"] }
+num_cpus = "1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+
+# Exactly ONE of these features:
+rustls = { version = "0.23.31", features = ["ring"], default-features = false }
+
+rustls-pemfile = "2.2"
+rcgen = { version = "0.13", features = ["pem"] }
+pem = "3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }

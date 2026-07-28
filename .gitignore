@@ -1,0 +1,87 @@
+# ---- OS / IDE ----
+.DS_Store
+.idea/
+.vscode/
+
+# ---- Rust ----
+/target/
+/**/target/
+
+# Keep Cargo.lock for reproducible application/binary builds.
+# Do NOT ignore Cargo.lock unless this repo is a pure library crate.
+
+# ---- C/C++ build outputs ----
+/build/
+/bin/
+/obj/
+/out/
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+
+# ---- Logs & temporary files ----
+*.log
+*.tmp
+*.swp
+*.core
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+wallets/
+stores/
+certs/
+**/private_keys/
+**/keys/
+**/credentials/
+**/wallets/
+**/stores/
+
+# ---- Keys & certs ----
+*.key
+*.pem
+*.der
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.wallet
+
+
+*.pub
+
+# ---- Benchmark output ----
+*.csv
+benchmarks/**/*.json
+benchmarks/**/*.jsonl
+benchmarks/**/*.txt
+benchmarks/**/*.log
+releases/
+benchmarks/results/
+benchmarks/local/
+benchmarks/cloud-2node/
+benchmarks/cloud-3node/
+
+# Keep placeholder files if needed
+!benchmarks/results/.gitkeep
+!benchmarks/local/.gitkeep
+!benchmarks/cloud-2node/.gitkeep
+!benchmarks/cloud-3node/.gitkeep
+
+# ---- Ledger / generated artifacts ----
+ledger/*.shred
+*.shred
+
+# ---- Fuzzing artifacts ----
+fuzz/artifacts/
+
+# ---- Node, if any subtools/scripts ----
+node_modules/
+dist/

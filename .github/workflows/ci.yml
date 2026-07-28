@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: cargo fmt
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+  build-test:
+    name: cargo build and test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --all-targets
+
+      - name: Test
+        run: cargo test --all-targets
+
+  batch-crypto:
+    name: dalek batch build and test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build with batch verification
+        run: cargo build --all-targets --features dalek_batch
+
+      - name: Test with batch verification
+        run: cargo test --all-targets --features dalek_batch
+
+  clippy:
+    name: cargo clippy
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  secret-scan:
+    name: secret marker scan
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan tracked files for private key markers
+        shell: pwsh
+        run: |
+          $patterns = @(
+            'BEGIN ' + '(RSA |EC |OPENSSH |PRIVATE |ENCRYPTED |DSA )?' + 'PRIVATE KEY',
+            'AWS_' + 'ACCESS_KEY_ID',
+            'AWS_' + 'SECRET_ACCESS_KEY'
+          )
+          $files = git ls-files
+          $matches = Select-String -Path $files -Pattern $patterns -ErrorAction SilentlyContinue
+          if ($matches) {
+            $matches | ForEach-Object { "$($_.Path):$($_.LineNumber): secret marker matched" }
+            exit 1
+          }

@@ -1,0 +1,2 @@
+schema,git_commit,crate_version,build_features,build_profile,rust_version,os,arch,cpu_count,configured_packets,payload_bytes,sent_packets,acked_packets,accepted_packets,stored_records,drops,errors,duration_secs,packet_rate,latency_p50_us,latency_p90_us,latency_p99_us,latency_p999_us
+rpkv2.quic_pipeline_benchmark.v1,043378aed5f4,0.1.0,ed25519,release,rustc 1.95.0 (59807616e 2026-04-14),windows,x86_64,24,500,256,500,500,500,144,0,0,0.086727,5765.204,130,174,276,308

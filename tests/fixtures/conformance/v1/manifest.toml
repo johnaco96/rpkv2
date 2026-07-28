@@ -1,0 +1,23 @@
+fixture_version = 1
+compatibility_target = "custom-rpkv2"
+network = "rpkv2-conformance-localnet"
+
+[required_fixtures]
+genesis = "genesis.toml"
+validator_identities = "validators.toml"
+transactions = "generated-from-versioned-seeds"
+blocks = "generated-from-versioned-seeds"
+votes = "generated-from-versioned-seeds"
+shreds = "generated-from-versioned-seeds"
+snapshots = "generated-from-versioned-seeds"
+
+[versions]
+transaction = 1
+ledger = 1
+snapshot = 1
+consensus_message = 1
+propagation = 1
+
+[release_gate]
+compatibility_failures_block_release = true
+run_in_ci = true

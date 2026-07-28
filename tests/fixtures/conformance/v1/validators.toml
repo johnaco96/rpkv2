@@ -1,0 +1,17 @@
+[[validators]]
+validator_id = "validator-a"
+tls_spki_hex = "72706b76322d636f6e666f726d616e63652d76616c696461746f722d612d73706b69"
+packet_signing_key_hex = "15f3f565a5b9d67a3f0f9d73d8628f61e56c6e0df49c84e70b1232aa98fac889"
+consensus_voting_key_hex = "d62f016a1efd1e4fdf793eb42cd84471e1ba9f0cf04d1287b5cc71f616287cb8"
+voting_weight = 1
+activation_epoch = 0
+activation_slot = 0
+
+[[validators]]
+validator_id = "validator-b"
+tls_spki_hex = "72706b76322d636f6e666f726d616e63652d76616c696461746f722d622d73706b69"
+packet_signing_key_hex = "610835054c97e28e747da3f09ac7f43622c1d3d753274d62f63a6a29ec17f927"
+consensus_voting_key_hex = "34b4d9043156cb6dcf0beb0a2949b7559c940d2bcb6dbe8c53a9b30278e3a746"
+voting_weight = 1
+activation_epoch = 0
+activation_slot = 0
