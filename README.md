@@ -1,4 +1,26 @@
+<div align="center">
+
 # rpkv2
+
+*Low-latency validator networking and processing over mutually authenticated
+raw-public-key QUIC/TLS 1.3.*
+
+[Overview](#what-is-implemented) ·
+[Architecture](#architecture) ·
+[Quick start](#quick-start) ·
+[Security](docs/tls-rpk-security-review.md) ·
+[Benchmarks](docs/benchmark-plan.md) ·
+[Roadmap](docs/roadmap.md)
+
+[![Rust 1.85+](https://img.shields.io/badge/Rust-1.85%2B-CE412B?logo=rust&logoColor=white)](Cargo.toml)
+[![QUIC](https://img.shields.io/badge/transport-QUIC-4C8BF5)](#architecture)
+[![TLS 1.3](https://img.shields.io/badge/TLS-1.3-2EA44F)](docs/tls-rpk-security-review.md)
+[![RFC 7250](https://img.shields.io/badge/auth-RFC%207250%20RPK-7B61FF)](https://www.rfc-editor.org/rfc/rfc7250)
+[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-6E7781)](#current-limits)
+
+</div>
+
+![Animated rpkv2 architecture and verification demo](docs/assets/rpkv2-architecture-demo.gif)
 
 `rpkv2` is a Rust research prototype for authenticated blockchain-validator
 networking and execution. It combines mutually authenticated QUIC/TLS 1.3
