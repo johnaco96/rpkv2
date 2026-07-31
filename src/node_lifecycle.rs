@@ -306,6 +306,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "ed25519")]
     fn init_node_creates_repeatable_directory_layout() {
         let dir = temp_dir();
 

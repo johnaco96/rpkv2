@@ -1,3 +1,8 @@
+#[cfg(not(any(feature = "ed25519", feature = "insecure_demo")))]
+compile_error!(
+    "enable the default ed25519 feature or explicitly enable insecure_demo for local-only stub crypto"
+);
+
 pub mod backpressure;
 pub mod blockstore;
 pub mod config;

@@ -281,7 +281,7 @@ fn now_unix_seconds() -> Result<u64> {
         .as_secs())
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ed25519"))]
 mod tests {
     use super::*;
     use std::{

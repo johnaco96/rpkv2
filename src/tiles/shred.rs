@@ -7,7 +7,9 @@ use std::{sync::Arc, thread};
 
 use super::poh::PohEntry;
 
-/// A tiny "shred": chunk of an entry (no erasure coding yet).
+const ENTRY_HASH_LEN: usize = 32;
+
+/// A bounded chunk of a hashed entry. Erasure coding is not implemented.
 #[derive(Clone)]
 pub struct Shred {
     pub sequence: u64,
@@ -37,8 +39,10 @@ impl Tile for Shredder {
             while !shutdown.is_requested() || !self.rx.is_empty() {
                 if let Some(entry) = self.rx.pop() {
                     idle.reset();
-                    // concatenate payloads as a simple "block"
-                    let mut blob = Vec::new();
+                    // Prefix the payload stream with its chained entry hash so the
+                    // digest is retained by downstream signing and storage.
+                    let mut blob = Vec::with_capacity(ENTRY_HASH_LEN);
+                    blob.extend_from_slice(&entry.hash);
                     for bb in &entry.batches {
                         for v in &bb.txns {
                             blob.extend_from_slice(&v.txn.payload);
@@ -75,5 +79,68 @@ impl Tile for Shredder {
                 }
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        shutdown::Shutdown,
+        tiles::{Txn, VerifiedTxn, bank::BankBatch},
+    };
+    use std::time::Duration;
+
+    fn entry(hash: [u8; 32], payload: &'static [u8]) -> PohEntry {
+        PohEntry {
+            slot: 9,
+            hash,
+            batches: vec![BankBatch {
+                slot: 9,
+                txns: vec![VerifiedTxn {
+                    txn: Txn {
+                        header: crate::fastpath::packet::Header {
+                            slot: 9,
+                            ..Default::default()
+                        },
+                        payload: Bytes::from_static(payload),
+                        peer: "test-peer".to_string(),
+                        recv_ts_ns: 0,
+                        pipeline_seq: 0,
+                    },
+                    ok: true,
+                }],
+            }],
+        }
+    }
+
+    #[test]
+    fn shreds_retain_entry_hash_and_transaction_count() {
+        let input = Arc::new(ArrayQueue::new(2));
+        let output = Arc::new(ArrayQueue::new(4));
+        let hash = [7u8; 32];
+        assert!(input.push(entry(hash, b"payload")).is_ok());
+        let shutdown = Shutdown::new();
+        let handle = Shredder {
+            rx: input,
+            tx: output.clone(),
+            mtu: 256,
+        }
+        .start_with_shutdown(shutdown.clone());
+
+        for _ in 0..100 {
+            if !output.is_empty() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        shutdown.request();
+        handle.join().expect("shredder thread");
+
+        let shred = output.pop().expect("output shred");
+        assert_eq!(&shred.data[..ENTRY_HASH_LEN], &hash);
+        assert_eq!(&shred.data[ENTRY_HASH_LEN..], b"payload");
+        assert!(shred.last);
+        assert_eq!(shred.completed_transactions, 1);
     }
 }

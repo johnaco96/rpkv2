@@ -22,6 +22,9 @@ Protected binaries include:
 - `bench_stream`
 - `fast_tx`
 - `fast_rx`
+- `overload_suite`
+- `quic_pipeline_bench`
+- `soak_bench`
 
 ## Insecure Demo Mode
 
@@ -30,6 +33,7 @@ and only for demo-style builds:
 
 ```text
 cargo build --no-default-features --features insecure_demo --bin demo
+cargo test --lib --no-default-features --features insecure_demo
 ```
 
 `insecure_demo` exists for local smoke tests where cryptographic authenticity is
@@ -46,3 +50,6 @@ cargo build --no-default-features --bin server
 
 The failure is intentional. It prevents production paths from compiling without
 real Ed25519 verification.
+
+The library also emits an explicit compile error when neither `ed25519` nor
+`insecure_demo` is enabled, rather than falling through to an implicit stub.

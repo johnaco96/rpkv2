@@ -57,6 +57,12 @@ jobs:
       - name: Test with batch verification
         run: cargo test --all-targets --features dalek_batch
 
+      - name: Check explicit insecure demo build
+        run: cargo check --no-default-features --features insecure_demo --bin demo
+
+      - name: Test insecure demo library path
+        run: cargo test --lib --no-default-features --features insecure_demo
+
   clippy:
     name: cargo clippy
     runs-on: windows-latest
@@ -71,6 +77,9 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Clippy explicit insecure demo path
+        run: cargo clippy --lib --no-default-features --features insecure_demo -- -D warnings
 
   secret-scan:
     name: secret marker scan

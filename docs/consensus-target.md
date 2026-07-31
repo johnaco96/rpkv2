@@ -10,9 +10,11 @@ The current validator target is a **new standalone blockchain validator
 prototype**.
 
 It is **not Solana-compatible** and does not currently plug into an existing
-Solana or other blockchain client. The existing codebase provides a hardened
-validator networking, packet authentication, replay-protection, metrics, health,
-storage experiment, and benchmark foundation. It does not yet implement a valid
+Solana or other blockchain client. The codebase provides validator networking,
+packet authentication, replay protection, metrics, health, storage,
+consensus-component, and benchmark experiments. Validator-set,
+leader-schedule, signed-message, fork-choice, finality, and replay components
+exist and are tested in isolation, but they are not composed into a valid
 production blockchain consensus protocol.
 
 Compatibility with an existing chain is not required for the first consensus
@@ -55,15 +57,15 @@ Out of scope for the first production release:
 | Area | Target assumption | Status |
 | --- | --- | --- |
 | Network model | Partially synchronous network. Safety must hold during partitions; liveness may require eventual timely delivery among enough honest voting weight. | Target only. |
-| Validator set | Permissioned validator set loaded deterministically from genesis/config and later ledger-governed state transitions. Unknown validators cannot propose or vote. | Not implemented. |
-| Voting weight | Stake-weighted voting is the target. Equal-weight voting may be used only for early local tests and must not be presented as production consensus unless explicitly chosen in a later design review. | Not implemented. |
-| Leader schedule | Deterministic leader schedule derived from validator set, voting weight, epoch/slot, and stable randomness or deterministic seed. All honest nodes must compute the same leader for every slot. | Not implemented. |
-| Block/slot timing | Fixed slot duration must be defined before implementation. Slot source must be consensus-aware, not only local wall clock. Clock skew tolerance must be specified. | Not implemented. |
-| Proposal messages | A leader proposes a block or batch for a slot. The proposal must include parent/fork reference, slot, proposer identity, payload commitment, and signature. | Not implemented. |
-| Vote messages | Validators vote on block/fork candidates with signed vote messages that include validator id, slot, block/fork id, lockout/finality data, and signature. | Not implemented. |
-| Quorum threshold | Finality target is at least two-thirds of active voting weight, unless a later protocol design chooses a different BFT threshold with justification. | Not implemented. |
-| Fork choice | Fork choice must be deterministic and must never finalize conflicting forks with honest two-thirds voting weight. | Not implemented. |
-| Slashing/equivocation | Equivocation evidence must be detected and recorded. Automatic economic slashing is out of scope for the first release, but equivocation must block or quarantine the offending validator according to a documented policy. | Not implemented. |
+| Validator set | Permissioned validator set loaded deterministically from genesis/config and later ledger-governed state transitions. Unknown validators cannot propose or vote. | Prototype component implemented; ledger-governed transitions remain. |
+| Voting weight | Stake-weighted voting is the target. Equal-weight voting may be used only for early local tests and must not be presented as production consensus unless explicitly chosen in a later design review. | Static configured weights implemented; economic stake lifecycle is not. |
+| Leader schedule | Deterministic leader schedule derived from validator set, voting weight, epoch/slot, and stable randomness or deterministic seed. All honest nodes must compute the same leader for every slot. | Deterministic weighted prototype implemented and tested. |
+| Block/slot timing | Fixed slot duration must be defined before implementation. Slot source must be consensus-aware, not only local wall clock. Clock skew tolerance must be specified. | Production timing model not implemented. |
+| Proposal messages | A leader proposes a block or batch for a slot. The proposal must include parent/fork reference, slot, proposer identity, payload commitment, and signature. | Signed prototype message implemented and tested. |
+| Vote messages | Validators vote on block/fork candidates with signed vote messages that include validator id, slot, block/fork id, lockout/finality data, and signature. | Signed prototype message implemented and tested; runtime integration remains. |
+| Quorum threshold | Finality target is at least two-thirds of active voting weight, unless a later protocol design chooses a different BFT threshold with justification. | Weighted prototype rule implemented and tested; formal analysis and runtime integration remain. |
+| Fork choice | Fork choice must be deterministic and must never finalize conflicting forks with honest two-thirds voting weight. | Deterministic prototype implemented and tested; production protocol validation remains. |
+| Slashing/equivocation | Equivocation evidence must be detected and recorded. Automatic economic slashing is out of scope for the first release, but equivocation must block or quarantine the offending validator according to a documented policy. | Detection and evidence retention implemented; automated response policy is not. |
 
 ## Safety Assumptions
 
@@ -101,13 +103,14 @@ over finalizing conflicting histories.
 
 ## Required Message Families
 
-The current packet format is not enough to be a production consensus protocol.
-Future implementation must define at least:
+The validator packet format alone is not enough to be a production consensus
+protocol. The prototype defines several signed message families, but a complete
+runtime must integrate and validate at least:
 
-- `BlockProposal`: leader proposal for a slot/fork;
-- `Vote`: validator vote for a proposal or fork state;
+- `BlockProposal`: implemented prototype leader proposal for a slot/fork;
+- `Vote`: implemented prototype validator vote for a proposal or fork state;
 - `Timeout` or `NoVote`: optional evidence that a slot did not complete;
-- `EquivocationEvidence`: proof of conflicting proposals or votes;
+- `EquivocationEvidence`: implemented prototype evidence for conflicting votes;
 - `ValidatorSetUpdate`: deterministic activation/deactivation or weight update;
 - `LedgerRepair`: safe recovery/repair messages if repair is in scope.
 
@@ -166,6 +169,6 @@ Consensus design must be reviewed together with:
 - `docs/storage-contract.md`;
 - `docs/production-readiness-review.md`.
 
-The current production-readiness decision remains **NO-GO** until consensus,
-fork choice, finality, validator set management, and ledger/blockstore blockers
-are closed with tests and release evidence.
+The current production-readiness decision remains **NO-GO** until the tested
+consensus, fork-choice, finality, validator-set, and ledger/blockstore components
+are integrated into one multi-node runtime and validated with release evidence.

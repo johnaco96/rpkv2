@@ -20,6 +20,11 @@ u32 data_len
 data bytes
 ```
 
+The Ed25519 signature covers a domain-separated preimage containing the slot,
+shred index, final-shred flag, data length, and data. The reconstructed entry
+data begins with the 32-byte chained entry hash, so the PoH-style digest is
+retained by signing and storage rather than being computed and discarded.
+
 This backend is acceptable for local demos, benchmarks, and tightly scoped
 pilots only. It is not validator-grade block storage.
 

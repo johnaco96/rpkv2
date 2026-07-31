@@ -91,6 +91,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "ed25519")]
     fn production_mode_accepts_safe_configured_startup() {
         production_guardrails().validate().unwrap();
     }

@@ -325,7 +325,7 @@ fn temp_path(path: &Path) -> Result<PathBuf> {
     Ok(path.with_file_name(format!("{}.tmp", file_name.to_string_lossy())))
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ed25519"))]
 mod tests {
     use super::*;
     use crate::{

@@ -370,7 +370,7 @@ fn validate_queue(field: &str, value: usize) -> Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ed25519"))]
 mod tests {
     use super::*;
     use rcgen::{CertificateParams, KeyPair};

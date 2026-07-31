@@ -91,7 +91,7 @@ fn schedule_index(at: EpochSlot) -> u64 {
     at.epoch.wrapping_mul(EPOCH_MIXER).wrapping_add(at.slot)
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ed25519"))]
 mod tests {
     use super::*;
     use crate::validator_set::{ValidatorIdentityConfig, ValidatorSetConfig};

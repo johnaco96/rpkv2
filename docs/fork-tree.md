@@ -1,6 +1,6 @@
 # Fork Tree
 
-Ticket 13.1 adds an in-memory fork tree that can be rebuilt from blockstore
+The project includes an in-memory fork tree that can be rebuilt from blockstore
 blocks.
 
 ## Model
@@ -31,8 +31,8 @@ rules are finalized.
 ## Finalized Root
 
 The tree exposes a finalized root hash and allows it to be advanced to a known
-block. Finality policy is not implemented in this ticket; this module only
-stores and exposes the selected root.
+block. The separate `fork_choice` module applies the prototype weighted finality
+rule, advances the root, and prunes forks that are no longer descendants of it.
 
 ## Rebuild
 
@@ -51,11 +51,10 @@ Coverage includes:
 
 ## Remaining Production Work
 
-This module does not yet implement:
+The composed prototype does not yet implement:
 
-- vote-lockout fork choice;
-- quorum/finality calculation;
-- finalized-root pruning;
+- production vote lockouts;
+- a formally analyzed consensus/finality protocol;
 - slashing/equivocation policy integration;
 - durable fork-tree checkpoints.
 

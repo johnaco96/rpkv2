@@ -8,8 +8,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// A "bank batch" = a group of verified txns for the same slot.
-/// (In Phase 2 you’ll adapt this to Agave’s Bank ingestion.)
+/// A group of verified transactions for one slot.
 #[derive(Clone)]
 pub struct BankBatch {
     pub slot: u64,
@@ -81,4 +80,39 @@ fn push_bank_batch(tx: &BankOutQueue, slot: u64, buf: &mut Vec<VerifiedTxn>) {
         },
         INTERNAL_STAGE_POLICY,
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tiles::Txn;
+    use bytes::Bytes;
+
+    fn verified(slot: u64) -> VerifiedTxn {
+        VerifiedTxn {
+            txn: Txn {
+                header: crate::fastpath::packet::Header {
+                    slot,
+                    ..Default::default()
+                },
+                payload: Bytes::from_static(b"payload"),
+                peer: "test-peer".to_string(),
+                recv_ts_ns: 0,
+                pipeline_seq: 0,
+            },
+            ok: true,
+        }
+    }
+
+    #[test]
+    fn push_bank_batch_preserves_slot_and_drains_buffer() {
+        let output = Arc::new(ArrayQueue::new(2));
+        let mut buffer = vec![verified(5), verified(5)];
+        push_bank_batch(&output, 5, &mut buffer);
+
+        assert!(buffer.is_empty());
+        let batch = output.pop().expect("bank batch");
+        assert_eq!(batch.slot, 5);
+        assert_eq!(batch.txns.len(), 2);
+    }
 }

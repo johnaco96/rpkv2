@@ -44,8 +44,8 @@ measurement.
 - Bounded queues and explicit overload policies across independent processing
   stages.
 - Batched Ed25519 verification, transaction packing, deterministic execution,
-  slot batching, PoH-style hashing, shredding, signing, storage, and fanout
-  experiments.
+  slot batching, chained PoH-style entry hashing, shredding, signing, and
+  storage experiments.
 - A validator set, weighted leader schedule, signed consensus messages,
   equivocation evidence, fork tree, fork choice, finality rules, and replay.
 - Integrity-checked blockstore records, snapshots, recovery policies, metrics,
@@ -67,11 +67,12 @@ mutual-RPK QUIC ingress
  peer limits -> dedupe -> verify -> ordered pack -> bank
                                                    |
                                                    v
-                                  PoH -> shred -> sign -> storage
-                                                   |
-                                                   v
-                                                fanout
+                    chained entry hash -> shred -> sign -> storage
 ```
+
+Signed block/shred propagation, repair, and peer fanout are implemented as
+separate protocol experiments. They are not yet wired into the configured
+runtime above.
 
 The supporting validator model is split into focused modules:
 

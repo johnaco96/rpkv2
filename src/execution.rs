@@ -457,7 +457,7 @@ fn map_replay_or_validation(error: String) -> ExecutionError {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ed25519"))]
 mod tests {
     use super::*;
     use crate::{

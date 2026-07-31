@@ -319,7 +319,7 @@ pub fn peer_validator_id_from_identity(
     registry.resolve_tls_spki(first.as_ref()).cloned()
 }
 
-/// Load a PUBLIC KEY (SPKI) from PEM -> Vec<u8> (DER)
+/// Load a PUBLIC KEY (SPKI) from PEM into a DER-encoded `Vec<u8>`.
 pub fn load_spki_from_pem(path: &str) -> Result<Vec<u8>> {
     let mut rdr = BufReader::new(File::open(path)?);
     match read_one(&mut rdr)? {
