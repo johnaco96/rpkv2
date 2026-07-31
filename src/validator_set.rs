@@ -289,7 +289,7 @@ mod tests {
     use ed25519_dalek::SigningKey;
 
     fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+        crate::test_support::hex(bytes)
     }
 
     fn verify_key_hex(seed: u8) -> String {

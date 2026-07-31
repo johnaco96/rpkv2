@@ -18,21 +18,21 @@ use std::{
     net::SocketAddr,
     path::{Path, PathBuf},
     str::FromStr,
-    sync::{
-        Once,
-        atomic::{AtomicU64, Ordering},
-    },
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    sync::Once,
+    time::Duration,
 };
 use tokio::time::{sleep, timeout};
 
+#[path = "common/temp_dir.rs"]
+mod test_temp;
+use test_temp::temp_dir;
+
 static INSTALL_PROVIDER: Once = Once::new();
-static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn configured_mutual_rpk_quic_packet_reaches_tile_pipeline() {
     install_provider_once();
-    let dir = temp_dir();
+    let dir = temp_dir("quic-runtime-proof");
     let (server_key_path, server_spki) = write_tls_keypair(&dir, "server");
     let (client_key_path, client_spki) = write_tls_keypair(&dir, "client");
     let packet_key = ed25519_dalek::SigningKey::from_bytes(&[8u8; 32]);
@@ -93,7 +93,7 @@ async fn configured_mutual_rpk_quic_packet_reaches_tile_pipeline() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn configured_mutual_rpk_quic_rejects_unknown_client_spki() {
     install_provider_once();
-    let dir = temp_dir();
+    let dir = temp_dir("quic-runtime-proof");
     let (server_key_path, server_spki) = write_tls_keypair(&dir, "server");
     let (client_key_path, _client_spki) = write_tls_keypair(&dir, "client");
 
@@ -125,7 +125,7 @@ async fn configured_mutual_rpk_quic_rejects_unknown_client_spki() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn configured_mutual_rpk_quic_rejects_wrong_server_spki() {
     install_provider_once();
-    let dir = temp_dir();
+    let dir = temp_dir("quic-runtime-proof");
     let (server_key_path, _server_spki) = write_tls_keypair(&dir, "server");
     let (client_key_path, client_spki) = write_tls_keypair(&dir, "client");
     let (_, wrong_server_spki) = write_tls_keypair(&dir, "wrong-server");
@@ -157,20 +157,6 @@ async fn configured_mutual_rpk_quic_rejects_wrong_server_spki() {
 
 fn install_provider_once() {
     INSTALL_PROVIDER.call_once(tls::install_provider);
-}
-
-fn temp_dir() -> PathBuf {
-    let suffix = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-    let dir = std::env::temp_dir().join(format!(
-        "rpkv2-quic-runtime-proof-{}-{suffix}-{counter}",
-        std::process::id()
-    ));
-    fs::create_dir_all(&dir).unwrap();
-    dir
 }
 
 fn write_tls_keypair(dir: &Path, name: &str) -> (PathBuf, Vec<u8>) {

@@ -5,6 +5,7 @@ use crate::{
     ledger::LedgerHash,
     state::{Account, StateDb},
     validator_set::{EpochSlot, ValidatorIdentityRecord, ValidatorSet},
+    wire::Cursor as WireCursor,
 };
 use anyhow::{Result, anyhow, bail};
 use std::str::FromStr;
@@ -357,20 +358,18 @@ fn put_blob(out: &mut Vec<u8>, value: &[u8]) -> Result<()> {
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "snapshot"),
+        }
     }
 
     fn magic(&mut self, expected: &[u8; 4]) -> Result<()> {
-        if self.take(4)? != expected {
-            bail!("invalid snapshot magic");
-        }
-        Ok(())
+        self.inner.expect(expected, "invalid snapshot magic")
     }
 
     fn version(&mut self) -> Result<()> {
@@ -382,15 +381,15 @@ impl<'a> Cursor<'a> {
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u32(&mut self) -> Result<u32> {
-        Ok(u32::from_be_bytes(self.take(4)?.try_into()?))
+        self.inner.u32()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        Ok(u64::from_be_bytes(self.take(8)?.try_into()?))
+        self.inner.u64()
     }
 
     fn hash(&mut self) -> Result<LedgerHash> {
@@ -426,23 +425,11 @@ impl<'a> Cursor<'a> {
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("trailing bytes after snapshot");
-        }
-        Ok(())
+        self.inner.finish()
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("snapshot cursor overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated snapshot");
-        }
-        let out = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(out)
+        self.inner.take(len)
     }
 }
 

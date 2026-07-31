@@ -290,7 +290,7 @@ mod tests {
     }
 
     fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+        crate::test_support::hex(bytes)
     }
 
     #[test]

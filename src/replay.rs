@@ -185,28 +185,10 @@ mod tests {
         validator_set::{ValidatorIdentityRecord, ValidatorSet},
     };
     use ed25519_dalek::SigningKey;
-    use std::{
-        fs,
-        path::PathBuf,
-        str::FromStr,
-        sync::atomic::{AtomicU64, Ordering},
-        time::{SystemTime, UNIX_EPOCH},
-    };
-
-    static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+    use std::{path::PathBuf, str::FromStr};
 
     fn temp_dir() -> PathBuf {
-        let suffix = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!(
-            "rpkv2-replay-test-{}-{suffix}-{counter}",
-            std::process::id()
-        ));
-        fs::create_dir_all(&dir).unwrap();
-        dir
+        crate::test_support::temp_dir("replay")
     }
 
     fn key(seed: u8) -> SigningKey {
@@ -218,7 +200,7 @@ mod tests {
     }
 
     fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+        crate::test_support::hex(bytes)
     }
 
     fn hash(byte: u8) -> LedgerHash {

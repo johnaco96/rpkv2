@@ -1,3 +1,4 @@
+use crate::wire::Cursor as WireCursor;
 use anyhow::{Result, anyhow, bail};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -322,44 +323,34 @@ fn verify_signature(_pubkey: &[u8; 32], _preimage: &[u8], _signature: &[u8; 64])
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "transaction"),
+        }
     }
 
     fn expect(&mut self, expected: &[u8]) -> Result<()> {
-        let actual = self.take(expected.len())?;
-        if actual != expected {
-            bail!("invalid transaction magic");
-        }
-        Ok(())
+        self.inner.expect(expected, "invalid transaction magic")
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u16(&mut self) -> Result<u16> {
-        let bytes = self.take(2)?;
-        Ok(u16::from_be_bytes([bytes[0], bytes[1]]))
+        self.inner.u16()
     }
 
     fn u32(&mut self) -> Result<u32> {
-        let bytes = self.take(4)?;
-        Ok(u32::from_be_bytes(
-            bytes.try_into().expect("cursor returned exact u32 length"),
-        ))
+        self.inner.u32()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        let bytes = self.take(8)?;
-        Ok(u64::from_be_bytes(
-            bytes.try_into().expect("cursor returned exact u64 length"),
-        ))
+        self.inner.u64()
     }
 
     fn hash(&mut self) -> Result<[u8; 32]> {
@@ -441,23 +432,11 @@ impl<'a> Cursor<'a> {
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("transaction length overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated transaction");
-        }
-        let out = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(out)
+        self.inner.take(len)
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("transaction has trailing bytes");
-        }
-        Ok(())
+        self.inner.finish()
     }
 }
 

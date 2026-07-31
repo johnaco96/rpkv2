@@ -2,6 +2,7 @@ use crate::{
     consensus_messages::{ConsensusMessage, Vote},
     ledger::{LedgerBlock, LedgerHash, LedgerShred},
     validator_set::EpochSlot,
+    wire::Cursor as WireCursor,
 };
 use anyhow::{Result, anyhow, bail};
 use std::{
@@ -585,25 +586,26 @@ fn read_exact_or_partial(reader: &mut impl Read, buf: &mut [u8]) -> io::Result<u
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "blockstore payload"),
+        }
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u32(&mut self) -> Result<u32> {
-        Ok(u32::from_be_bytes(self.take(4)?.try_into()?))
+        self.inner.u32()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        Ok(u64::from_be_bytes(self.take(8)?.try_into()?))
+        self.inner.u64()
     }
 
     fn slot(&mut self) -> Result<EpochSlot> {
@@ -623,23 +625,11 @@ impl<'a> Cursor<'a> {
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("trailing bytes after blockstore payload");
-        }
-        Ok(())
+        self.inner.finish()
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("blockstore cursor overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated blockstore payload");
-        }
-        let out = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(out)
+        self.inner.take(len)
     }
 }
 
@@ -651,28 +641,13 @@ mod tests {
         ledger::{LedgerEntry, TransactionBatch},
     };
     use std::{
-        fs,
         io::{Seek, SeekFrom},
         path::PathBuf,
         str::FromStr,
-        sync::atomic::{AtomicU64, Ordering},
-        time::{SystemTime, UNIX_EPOCH},
     };
 
-    static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
-
     fn temp_dir() -> PathBuf {
-        let suffix = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!(
-            "rpkv2-blockstore-test-{}-{suffix}-{counter}",
-            std::process::id()
-        ));
-        fs::create_dir_all(&dir).unwrap();
-        dir
+        crate::test_support::temp_dir("blockstore")
     }
 
     fn hash(byte: u8) -> LedgerHash {

@@ -349,26 +349,10 @@ mod tests {
         tiles::storage::StorageRecoveryPolicy,
     };
     use ed25519_dalek::Signer;
-    use std::{
-        fs,
-        sync::atomic::{AtomicU64, Ordering},
-        time::{Duration, SystemTime},
-    };
-
-    static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+    use std::time::Duration;
 
     fn temp_dir() -> PathBuf {
-        let suffix = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!(
-            "rpkv2-server-pipeline-test-{}-{suffix}-{counter}",
-            std::process::id()
-        ));
-        fs::create_dir_all(&dir).unwrap();
-        dir
+        crate::test_support::temp_dir("server-pipeline")
     }
 
     #[test]

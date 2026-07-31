@@ -32,6 +32,8 @@ pub mod shutdown;
 pub mod snapshot;
 pub mod state;
 pub mod supervision;
+#[cfg(test)]
+mod test_support;
 pub mod tiles;
 pub mod tls;
 pub mod transaction;
@@ -39,3 +41,4 @@ pub mod transaction_ingress;
 pub mod util;
 pub mod validator_set;
 pub mod version;
+mod wire;

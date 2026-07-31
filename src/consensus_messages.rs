@@ -2,6 +2,7 @@ use crate::{
     identity::ValidatorId,
     leader_schedule::{LeaderSchedule, ProductionKind},
     validator_set::{EpochSlot, ValidatorSet},
+    wire::Cursor as WireCursor,
 };
 use anyhow::{Result, anyhow, bail};
 use std::{collections::BTreeMap, str::FromStr};
@@ -362,37 +363,31 @@ fn verify_consensus_signature(
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "consensus message"),
+        }
     }
 
     fn expect(&mut self, expected: &[u8]) -> Result<()> {
-        let actual = self.take(expected.len())?;
-        if actual != expected {
-            bail!("invalid consensus message magic");
-        }
-        Ok(())
+        self.inner
+            .expect(expected, "invalid consensus message magic")
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u16(&mut self) -> Result<u16> {
-        let bytes = self.take(2)?;
-        Ok(u16::from_be_bytes([bytes[0], bytes[1]]))
+        self.inner.u16()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        let bytes = self.take(8)?;
-        Ok(u64::from_be_bytes(
-            bytes.try_into().expect("cursor returned exact u64 length"),
-        ))
+        self.inner.u64()
     }
 
     fn validator_id(&mut self) -> Result<ValidatorId> {
@@ -415,23 +410,11 @@ impl<'a> Cursor<'a> {
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("consensus message length overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated consensus message");
-        }
-        let out = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(out)
+        self.inner.take(len)
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("consensus message has trailing bytes");
-        }
-        Ok(())
+        self.inner.finish()
     }
 }
 
@@ -442,7 +425,7 @@ mod tests {
     use ed25519_dalek::SigningKey;
 
     fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+        crate::test_support::hex(bytes)
     }
 
     fn key(seed: u8) -> SigningKey {

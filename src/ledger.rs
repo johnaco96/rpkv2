@@ -1,4 +1,4 @@
-use crate::{identity::ValidatorId, validator_set::EpochSlot};
+use crate::{identity::ValidatorId, validator_set::EpochSlot, wire::Cursor as WireCursor};
 use anyhow::{Result, anyhow, bail};
 use std::str::FromStr;
 
@@ -542,21 +542,18 @@ fn ensure_blob_len(name: &str, len: usize) -> Result<()> {
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "ledger object"),
+        }
     }
 
     fn magic(&mut self, expected: &[u8; 4]) -> Result<()> {
-        let actual = self.take(4)?;
-        if actual != expected {
-            bail!("invalid ledger magic");
-        }
-        Ok(())
+        self.inner.expect(expected, "invalid ledger magic")
     }
 
     fn version(&mut self) -> Result<()> {
@@ -568,19 +565,19 @@ impl<'a> Cursor<'a> {
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u16(&mut self) -> Result<u16> {
-        Ok(u16::from_be_bytes(self.take(2)?.try_into()?))
+        self.inner.u16()
     }
 
     fn u32(&mut self) -> Result<u32> {
-        Ok(u32::from_be_bytes(self.take(4)?.try_into()?))
+        self.inner.u32()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        Ok(u64::from_be_bytes(self.take(8)?.try_into()?))
+        self.inner.u64()
     }
 
     fn hash(&mut self) -> Result<LedgerHash> {
@@ -604,23 +601,11 @@ impl<'a> Cursor<'a> {
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("trailing bytes after ledger object");
-        }
-        Ok(())
+        self.inner.finish()
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("ledger cursor overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated ledger object");
-        }
-        let out = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(out)
+        self.inner.take(len)
     }
 }
 

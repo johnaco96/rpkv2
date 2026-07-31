@@ -4,28 +4,11 @@ use rpkv2::{
     identity_keys::{generate_validator_identity, hex},
     ledger::TransactionBatch,
 };
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    sync::atomic::{AtomicU64, Ordering},
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::{fs, path::Path};
 
-static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
-
-fn temp_dir() -> PathBuf {
-    let suffix = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-    let dir = std::env::temp_dir().join(format!(
-        "rpkv2-upgrade-compat-test-{}-{suffix}-{counter}",
-        std::process::id()
-    ));
-    fs::create_dir_all(&dir).unwrap();
-    dir
-}
+#[path = "common/temp_dir.rs"]
+mod test_temp;
+use test_temp::temp_dir;
 
 fn config_text(key_path: &Path, spki_path: &Path, verify_key_hex: &str) -> String {
     format!(
@@ -74,7 +57,7 @@ bind_address = "127.0.0.1:9100"
 
 #[test]
 fn incompatible_config_format_version_is_rejected() {
-    let dir = temp_dir();
+    let dir = temp_dir("upgrade-compatibility");
     let local = generate_validator_identity("validator-a", dir.join("local"), false).unwrap();
     let peer = generate_validator_identity("validator-b", dir.join("peer"), false).unwrap();
     let cfg = toml::from_str::<ProductionConfig>(&config_text(
@@ -98,7 +81,7 @@ fn incompatible_ledger_object_version_is_rejected() {
 
 #[test]
 fn incompatible_blockstore_record_version_is_rejected() {
-    let dir = temp_dir();
+    let dir = temp_dir("upgrade-compatibility");
     let log = dir.join("blockstore.log");
     let mut record = Vec::new();
     record.extend_from_slice(b"RPBS");

@@ -359,13 +359,9 @@ mod tests {
         io::Cursor,
         path::{Path, PathBuf},
         sync::Once,
-        sync::atomic::{AtomicU64, Ordering},
-        time::{SystemTime, UNIX_EPOCH},
     };
 
     static INSTALL_PROVIDER: Once = Once::new();
-    static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
-
     fn verifier(expected_spki: &[u8]) -> IdentityPinVerifier {
         IdentityPinVerifier {
             validator_id: ValidatorId::from_str("validator-a").unwrap(),
@@ -378,17 +374,7 @@ mod tests {
     }
 
     fn temp_dir() -> PathBuf {
-        let suffix = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!(
-            "rpkv2-mutual-rpk-test-{}-{suffix}-{counter}",
-            std::process::id()
-        ));
-        fs::create_dir_all(&dir).unwrap();
-        dir
+        crate::test_support::temp_dir("mutual-rpk")
     }
 
     fn write_keypair(dir: &Path, name: &str) -> (PathBuf, Vec<u8>) {

@@ -1,4 +1,7 @@
-use crate::{config::GossipConfig, identity::ValidatorId, validator_set::ValidatorSet};
+use crate::{
+    config::GossipConfig, identity::ValidatorId, validator_set::ValidatorSet,
+    wire::Cursor as WireCursor,
+};
 use anyhow::{Result, anyhow, bail};
 use std::{
     collections::BTreeMap,
@@ -400,32 +403,26 @@ fn verify_signature(_pubkey: &[u8; 32], _preimage: &[u8], _signature: &[u8; 64])
 }
 
 struct Cursor<'a> {
-    bytes: &'a [u8],
-    offset: usize,
+    inner: WireCursor<'a>,
 }
 
 impl<'a> Cursor<'a> {
     fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            inner: WireCursor::new(bytes, "gossip message"),
+        }
     }
 
     fn expect(&mut self, expected: &[u8]) -> Result<()> {
-        let actual = self.take(expected.len())?;
-        if actual != expected {
-            bail!("invalid gossip message magic");
-        }
-        Ok(())
+        self.inner.expect(expected, "invalid gossip message magic")
     }
 
     fn u8(&mut self) -> Result<u8> {
-        Ok(self.take(1)?[0])
+        self.inner.u8()
     }
 
     fn u64(&mut self) -> Result<u64> {
-        let bytes = self.take(8)?;
-        Ok(u64::from_be_bytes(
-            bytes.try_into().expect("cursor returned exact u64 length"),
-        ))
+        self.inner.u64()
     }
 
     fn validator_id(&mut self) -> Result<ValidatorId> {
@@ -460,30 +457,15 @@ impl<'a> Cursor<'a> {
     }
 
     fn u16(&mut self) -> Result<u16> {
-        let bytes = self.take(2)?;
-        Ok(u16::from_be_bytes(
-            bytes.try_into().expect("cursor returned exact u16 length"),
-        ))
+        self.inner.u16()
     }
 
     fn take(&mut self, len: usize) -> Result<&'a [u8]> {
-        let end = self
-            .offset
-            .checked_add(len)
-            .ok_or_else(|| anyhow!("gossip cursor overflow"))?;
-        if end > self.bytes.len() {
-            bail!("truncated gossip message");
-        }
-        let slice = &self.bytes[self.offset..end];
-        self.offset = end;
-        Ok(slice)
+        self.inner.take(len)
     }
 
     fn finish(&self) -> Result<()> {
-        if self.offset != self.bytes.len() {
-            bail!("gossip message has trailing bytes");
-        }
-        Ok(())
+        self.inner.finish()
     }
 }
 
