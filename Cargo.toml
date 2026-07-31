@@ -6,38 +6,6 @@ rust-version = "1.85"
 description = "Research prototype for mutually authenticated raw-public-key QUIC validator networking"
 build = "build.rs"
 
-[[bin]]
-name = "server"
-path = "bins/server.rs"
-
-[[bin]]
-name = "client"
-path = "bins/client.rs"
-
-[[bin]]
-name = "bench_handshake"
-path = "bins/bench_handshake.rs"
-
-[[bin]]
-name = "bench_dgram"
-path = "bins/bench_dgram.rs"
-
-[[bin]]
-name = "bench_stream"
-path = "bins/bench_stream.rs"
-
-[[bin]]
-name = "demo"
-path = "bins/demo.rs"
-
-[[bin]]
-name = "bench_handshake_tls"
-path = "bins/bench_handshake_tls.rs"
-
-[[bin]]
-name = "server_tls"
-path = "bins/server_tls.rs"
-
 [features]
 default = ["ed25519"]
 ed25519 = ["dep:ed25519-dalek"]          # enable real ed25519 verify
