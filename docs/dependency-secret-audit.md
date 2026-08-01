@@ -6,16 +6,17 @@ claim.
 
 ## Dependency Audit
 
-- `cargo audit --version` was attempted locally and failed because
-  `cargo-audit` is not installed in this workspace.
-- `cargo deny --version` was attempted locally and failed because `cargo-deny`
-  is not installed in this workspace.
-- The dependency lockfile is present as `Cargo.lock`, so future audit tools can
-  evaluate exact resolved versions.
+- The root application and fuzz harness both retain `Cargo.lock` files so
+  audits evaluate exact resolved versions.
+- `.github/workflows/security-audit.yml` runs the official RustSec audit action
+  when a Cargo manifest or lockfile changes, on manual request, and weekly
+  against the current default branch.
+- `.github/dependabot.yml` checks the root Cargo dependencies, fuzz-harness
+  dependencies, and GitHub Actions versions every week.
 
-Accepted risk: there is no vulnerability database check in this repository yet.
-Before any production deployment, install and run `cargo-audit` or `cargo-deny`
-in CI and record the output with the release artifact.
+Accepted risk: an advisory scan covers published RustSec advisories; it is not
+an independent source review, license-policy audit, or guarantee that every
+dependency is vulnerability-free.
 
 ## Secret Scan Result
 
@@ -49,9 +50,9 @@ not contain secrets.
 
 ## CI Coverage
 
-CI now includes a lightweight tracked-file secret marker scan. It fails if a
+CI includes a lightweight tracked-file secret marker scan. It fails if a
 tracked file contains a private key PEM header or common AWS credential marker.
 
 This does not replace a full secret scanner. Recommended follow-up: add a
-dedicated tool such as Gitleaks, TruffleHog, `cargo-audit`, or `cargo-deny` once
-the deployment environment can install those tools reliably.
+dedicated history-aware tool such as Gitleaks or TruffleHog when the deployment
+environment can install it reliably.

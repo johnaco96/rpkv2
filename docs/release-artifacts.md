@@ -2,7 +2,7 @@
 
 This document defines how to build a release candidate and tie it to a commit,
 binary version output, and benchmark evidence. It documents the current
-current prototype and is not a production-readiness claim.
+prototype and is not a production-readiness claim.
 
 ## Binary Version Output
 
@@ -37,8 +37,8 @@ Build the default secure feature set:
 ```bash
 git status --short --branch
 cargo build --release
-cargo test --features ed25519
-cargo clippy --all-targets -- -D warnings
+cargo test --all-targets
+cargo clippy --all-targets --all-features -- -D warnings
 ```
 
 Optional explicit feature build:

@@ -263,15 +263,7 @@ fn validate_hex_len(field: &str, value: &str, expected_len: Option<usize>) -> Re
     {
         bail!("{field} must be {expected_len} hex characters");
     }
-    if value.len() % 2 != 0 {
-        bail!("{field} must contain an even number of hex characters");
-    }
-    for byte in value.as_bytes() {
-        if !byte.is_ascii_hexdigit() {
-            bail!("{field} contains non-hex characters");
-        }
-    }
-    Ok(())
+    crate::hex_utils::validate(field, value)
 }
 
 fn now_unix_seconds() -> Result<u64> {

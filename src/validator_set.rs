@@ -252,17 +252,7 @@ pub struct ValidatorIdentityConfig {
 }
 
 fn parse_hex_bytes(field: &str, value: &str) -> Result<Vec<u8>> {
-    if value.len() % 2 != 0 {
-        bail!("{field} must contain an even number of hex characters");
-    }
-    let mut out = Vec::with_capacity(value.len() / 2);
-    for index in (0..value.len()).step_by(2) {
-        out.push(
-            u8::from_str_radix(&value[index..index + 2], 16)
-                .map_err(|_| anyhow!("{field} contains non-hex characters"))?,
-        );
-    }
-    Ok(out)
+    crate::hex_utils::decode(field, value)
 }
 
 fn validate_ed25519_verify_key(

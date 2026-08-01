@@ -2,8 +2,14 @@
 name = "rpkv2"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Research prototype for mutually authenticated raw-public-key QUIC validator networking"
+license = "MIT"
+repository = "https://github.com/johnaco96/rpkv2"
+readme = "README.md"
+keywords = ["quic", "tls", "blockchain", "validator", "ed25519"]
+categories = ["network-programming", "cryptography", "concurrency"]
+publish = false
 build = "build.rs"
 
 [features]

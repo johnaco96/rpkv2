@@ -1,6 +1,6 @@
 # Production Readiness Review Gate
 
-Review date: 2026-07-04
+Review date: 2026-07-31
 
 Scope: current repository state at the review date
 
@@ -21,7 +21,7 @@ blocking item remains open.
 
 | Gate item | Status | Evidence | Production claim impact |
 | --- | --- | --- | --- |
-| All CI passing | Pending remote confirmation | CI config exists in `.github/workflows/ci.yml` for formatting, build, tests, Ed25519 feature build/test, clippy, and secret marker scan. Local equivalents have passed during ticket work, but this gate requires the remote CI result for the final commit. | Blocks until remote CI is green. |
+| All CI passing | Pass for current `main` baseline; repeat for a release candidate | The complete formatting, build, test, feature, clippy, and secret-scan matrix passed for commit `53960c8` in [GitHub Actions](https://github.com/johnaco96/rpkv2/actions/runs/30673799622). A future release candidate must pass again at its exact commit. | Does not block the current research release; blocks a future production claim if the release-candidate commit is not green. |
 | Production-mode guardrails passing | Pass locally | `docs/runtime-modes.md`; `runtime_mode::tests::*`; negative check `server --mode production --check-config` fails with `production mode requires --config`. | Does not block by itself. |
 | Crypto tests passing | Pass locally | `cargo test` and `cargo test --features ed25519` include Ed25519 verification, malformed key/signature, invalid signature, and mixed batch tests. | Does not block by itself. |
 | RPK identity tests passing | Pass locally | Tests cover wrong SPKI, unknown validator, mutual inbound RPK authentication, TLS 1.3 negotiation, raw public key requirement, end-to-end X.509 fallback rejection, verifier-level certificate fallback rejection, and duplicate SPKI config. | Does not block by itself. |
@@ -37,8 +37,8 @@ blocking item remains open.
 
 Production readiness is blocked by the following items:
 
-1. Remote CI must pass for the exact release-candidate commit.
-2. A one-hour soak result must be completed and attached to a release candidate.
+1. A future release-candidate commit must have its own passing remote CI run.
+2. A one-hour soak result must be completed and attached to that release candidate.
 3. A longer production-like soak, ideally 24 hours or more, must be completed
    before any real production claim.
 4. Benchmark targets in `docs/production-scale-targets.md` must be met and

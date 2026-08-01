@@ -15,6 +15,7 @@ pub mod fork_replay;
 pub mod fork_tree;
 pub mod gossip;
 pub mod health;
+mod hex_utils;
 pub mod identity;
 pub mod identity_keys;
 pub mod leader_schedule;

@@ -12,7 +12,9 @@ raw-public-key QUIC/TLS 1.3.*
 [Benchmarks](docs/benchmark-plan.md) ·
 [Roadmap](docs/roadmap.md)
 
-[![Rust 1.85+](https://img.shields.io/badge/Rust-1.85%2B-CE412B?logo=rust&logoColor=white)](Cargo.toml)
+[![CI](https://github.com/johnaco96/rpkv2/actions/workflows/ci.yml/badge.svg)](https://github.com/johnaco96/rpkv2/actions/workflows/ci.yml)
+[![Rust 1.88+](https://img.shields.io/badge/Rust-1.88%2B-CE412B?logo=rust&logoColor=white)](Cargo.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![QUIC](https://img.shields.io/badge/transport-QUIC-4C8BF5)](#architecture)
 [![TLS 1.3](https://img.shields.io/badge/TLS-1.3-2EA44F)](docs/tls-rpk-security-review.md)
 [![RFC 7250](https://img.shields.io/badge/auth-RFC%207250%20RPK-7B61FF)](https://www.rfc-editor.org/rfc/rfc7250)
@@ -111,7 +113,7 @@ variance dominated the result.
 
 Requirements:
 
-- Rust 1.85 or newer (the crate uses Rust edition 2024)
+- Rust 1.88 or newer (the crate uses Rust edition 2024)
 - Windows, Linux, or macOS
 
 Run the self-contained pipeline demo:
@@ -165,6 +167,21 @@ All benchmark result paths emit CSV or JSON. Public or multi-machine runs should
 follow the [benchmark plan](docs/benchmark-plan.md) and
 [public benchmark security checklist](docs/public-benchmark-security.md).
 
+## Repository guide
+
+| Path | Responsibility |
+| --- | --- |
+| `src/tls.rs` and `src/identity.rs` | Mutual RPK authentication, SPKI pinning, and validator identity mapping |
+| `src/fastpath/` | Signed packet format, validation, replay protection, and batch verification |
+| `src/tiles/` | Bounded processing stages from deduplication through durable shred storage |
+| `src/server_pipeline.rs` | Composition of network ingress and tile queues |
+| `src/ledger.rs`, `src/blockstore.rs`, `src/state.rs` | Versioned ledger objects, durable records, and deterministic state |
+| `src/consensus_messages.rs`, `src/fork_*`, `src/replay.rs` | Signed consensus experiments, fork selection, and replay |
+| `src/propagation.rs` and `src/gossip.rs` | Peer discovery, block/shred propagation, and repair experiments |
+| `src/bin/` | Demos, operator tools, and CSV/JSON benchmark programs |
+| `tests/` | Cross-module, protocol-conformance, compatibility, and real QUIC integration tests |
+| `docs/` | Protocol contracts, threat model, runbooks, evidence, and explicit limitations |
+
 ## Feature flags
 
 | Feature | Effect |
@@ -205,3 +222,14 @@ This is a research prototype, not production-ready software.
   and formal protocol analysis remain outstanding.
 
 Those limits are deliberate and tracked in the [roadmap](docs/roadmap.md).
+
+## Contributing and security
+
+Small, focused contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md)
+for scope and required checks. Please use the private process in
+[SECURITY.md](SECURITY.md) for suspected vulnerabilities rather than opening a
+public issue.
+
+## License
+
+This project is available under the [MIT License](LICENSE).
