@@ -45,9 +45,10 @@ measurement.
   replay state.
 - Bounded queues and explicit overload policies across independent processing
   stages.
-- Batched Ed25519 verification, transaction packing, deterministic execution,
-  slot batching, chained PoH-style entry hashing, shredding, signing, and
-  storage experiments.
+- Batch-oriented Ed25519 verification, transaction packing, deterministic
+  execution, slot batching, chained PoH-style entry hashing, shredding,
+  signing, and storage experiments. The optional `dalek_batch` feature enables
+  ed25519-dalek's cryptographic batch-verification routine.
 - A validator set, weighted leader schedule, signed consensus messages,
   equivocation evidence, fork tree, fork choice, finality rules, and replay.
 - Integrity-checked blockstore records, snapshots, recovery policies, metrics,
@@ -105,16 +106,16 @@ registries, detects duplicate identities and keys, supports overlapping key
 rotation windows, and rejects X.509 fallback on the RPK path.
 
 The expected benefit is a smaller and simpler authentication object, not a
-guaranteed latency win. The checked-in loopback measurements found handshake
-latencies to be effectively indistinguishable at that scale; network and OS
-variance dominated the result.
+guaranteed latency win. This project does not claim that RPK handshakes are
+faster than X.509 handshakes.
 
 ## Quick start
 
 Requirements:
 
 - Rust 1.88 or newer (the crate uses Rust edition 2024)
-- Windows, Linux, or macOS
+- Windows or Linux (both exercised in CI). The code is expected to build on
+  macOS, but macOS is not currently exercised in CI.
 
 Run the self-contained pipeline demo:
 
@@ -190,9 +191,11 @@ follow the [benchmark plan](docs/benchmark-plan.md) and
 | `dalek_batch` | Enables ed25519-dalek batch verification |
 | `insecure_demo` | Explicit stub crypto for local demo-only builds |
 
-Production and benchmark binaries refuse to compile without `ed25519`.
-`insecure_demo` must not be used for public tests or authenticity-sensitive
-work.
+The network pipeline, load, soak, and overload binaries listed in
+[Crypto build modes](docs/crypto-build-modes.md) refuse to compile without
+`ed25519`. Comparison and reporting utilities that do not use the packet
+verification path are not covered by that guardrail. `insecure_demo` must not
+be used for public tests or authenticity-sensitive work.
 
 ## Evidence and design notes
 
@@ -205,7 +208,7 @@ work.
 - [Storage contract](docs/storage-contract.md)
 - [Protocol compatibility](docs/protocol-compatibility.md)
 - [Conformance suite](docs/conformance-suite.md)
-- [Recorded local performance evidence](docs/performance-evidence-fd10fda.md)
+- [Local functional benchmark evidence](docs/performance-evidence.md)
 - [Current limitations and roadmap](docs/roadmap.md)
 
 ## Current limits
@@ -216,8 +219,8 @@ This is a research prototype, not production-ready software.
   an existing blockchain network.
 - The full configured runtime still needs end-to-end integration of every
   consensus, execution, propagation, and blockstore component.
-- Checked-in performance evidence is local loopback evidence, not a
-  production-like multi-node result.
+- Checked-in benchmark evidence is a short local functional smoke run, not a
+  throughput result or a production-like multi-node measurement.
 - Long-duration soak, adversarial network testing, third-party security review,
   and formal protocol analysis remain outstanding.
 

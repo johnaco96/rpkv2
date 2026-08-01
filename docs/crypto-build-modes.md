@@ -10,9 +10,9 @@ cargo build
 cargo test
 ```
 
-Production and benchmark binaries require `ed25519`. If they are built with
-`--no-default-features`, they fail at compile time instead of silently accepting
-stub verification.
+The following network pipeline, load, soak, and overload binaries require
+`ed25519`. If they are built with `--no-default-features`, they fail at compile
+time instead of silently accepting stub packet verification.
 
 Protected binaries include:
 
@@ -25,6 +25,11 @@ Protected binaries include:
 - `overload_suite`
 - `quic_pipeline_bench`
 - `soak_bench`
+
+Handshake comparison and reporting utilities that do not use the validator
+packet-verification path are not covered by this list. In particular,
+`bench_handshake_tls` and `server_tls` exercise X.509 TLS, while
+`bench_summary` only reads benchmark output.
 
 ## Insecure Demo Mode
 

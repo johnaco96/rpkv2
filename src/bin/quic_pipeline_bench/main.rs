@@ -217,11 +217,13 @@ async fn run_local(args: LocalArgs) -> Result<()> {
     let packet_key = ed25519_dalek::SigningKey::from_bytes(&[8u8; 32]);
     let shred_key = ed25519_dalek::SigningKey::from_bytes(&[9u8; 32]);
     let shutdown = Shutdown::new();
+    let metrics_before = rpkv2::metrics::global().snapshot();
     let pipeline = ServerPipeline::start(
         pipeline_config(storage_dir.clone(), args.packets, 16_384),
         shred_key,
         shutdown.clone(),
     );
+    let queue_depths = pipeline.queue_depths();
 
     let server_endpoint = server_endpoint(
         args.out_dir.join("server.local.jsonl"),
@@ -287,6 +289,10 @@ async fn run_local(args: LocalArgs) -> Result<()> {
     let accepted = server_task.await??;
     let stored_before_shutdown =
         wait_for_storage_quiescence(&storage_dir, args.timeout_secs).await?;
+    let metrics_after = rpkv2::metrics::global().snapshot();
+    let metric_delta = pipeline_metrics_delta(&metrics_before, &metrics_after);
+    let queue_snapshots: Vec<_> = queue_depths.iter().map(|gauge| gauge.sample()).collect();
+    let drop_snapshots = backpressure::metrics_snapshot();
     shutdown.request();
     tokio::task::spawn_blocking(move || pipeline.join()).await?;
     let storage_report = scan_storage_dir(&storage_dir)?;
@@ -304,6 +310,12 @@ async fn run_local(args: LocalArgs) -> Result<()> {
         errors,
         duration,
         &latency,
+    )
+    .with_pipeline_evidence(
+        &metric_delta,
+        &queue_snapshots,
+        &drop_snapshots,
+        "ingress_ack_round_trip",
     );
 
     write_summary(&args.out_dir, "summary", &summary)?;

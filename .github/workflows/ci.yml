@@ -71,6 +71,19 @@ jobs:
       - name: Check all targets
         run: cargo check --all-targets
 
+  fuzz-workspace:
+    name: fuzz workspace lockfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check fuzz target with locked dependencies
+        run: cargo check --manifest-path fuzz/Cargo.toml --locked
+
   batch-crypto:
     name: dalek batch build and test
     runs-on: windows-latest
