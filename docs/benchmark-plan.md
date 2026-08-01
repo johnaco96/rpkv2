@@ -1,7 +1,7 @@
 # Two-Node Signed UDP Benchmark
 
-This benchmark preserves the unmerged two-node signed UDP work for the current
-current prototype. It exercises the raw packet fast path, not the
+This benchmark preserves the two-node signed UDP work for the current
+prototype. It exercises the raw packet fast path, not the
 QUIC/RPK validator server.
 
 ## Binaries

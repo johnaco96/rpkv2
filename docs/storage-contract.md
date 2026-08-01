@@ -52,9 +52,12 @@ The flag is an acknowledgement, not a production readiness claim.
 ## Meaning Of Stored
 
 For the current demo backend, a shred is considered stored only after the write
-calls for the full record have returned and the file handle has been flushed.
-This does not guarantee durable persistence across power loss because the code
-does not call file or directory `fsync`.
+calls for the full record have returned and the buffered file handle has been
+flushed. When `sync_data=true`, successful completion also requires the
+operating system's file-data synchronization call to return. This is stronger
+than a buffered flush, but it is not a complete crash-consistency guarantee:
+new-file directory metadata is not synchronized and the format has no atomic
+journal or commit manifest.
 
 For validator-grade storage, `stored` must mean:
 
@@ -68,7 +71,10 @@ For validator-grade storage, `stored` must mean:
 Current behavior:
 
 - A process crash can leave a partial trailing record.
-- A power loss can lose recently flushed but unsynced data.
+- A power loss can lose recently flushed data when `sync_data=false`.
+- With `sync_data=true`, file data is synchronized per configured batch, but a
+  power loss can still expose unsynchronized directory metadata or the lack of
+  an atomic journal/commit record.
 - Startup scanning detects partial or corrupt records, but there is no manifest,
   journal, checkpoint, or finalized-slot marker.
 
@@ -83,8 +89,12 @@ Required production behavior:
 
 Current behavior:
 
-- `Storage` calls `flush()` after each record.
-- It does not call `sync_data`, `sync_all`, or directory fsync.
+- `Storage` buffers records and calls `flush()` when the configured record or
+  time threshold is reached, when switching slot files, and during shutdown.
+- When `sync_data=true`, it calls `File::sync_data()` after each buffered flush
+  and reports synchronization failure as a storage error.
+- It does not call `sync_all()` or synchronize directory metadata after
+  creating a slot file.
 
 Required production behavior:
 

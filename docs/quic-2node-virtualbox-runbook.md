@@ -13,7 +13,8 @@ they are not production validator performance claims.
 ```text
 cd ~/rpkv2
 git fetch --all
-git checkout codex/quic-runtime-benchmark-proof
+git checkout main
+git pull --ff-only
 cargo build --release --bin quic_pipeline_bench --features dalek_batch
 ```
 
@@ -244,5 +245,5 @@ validator-set packet-key conformance test.
 
 ## 10. Recorded Local Evidence
 
-See [performance-evidence-fd10fda.md](performance-evidence-fd10fda.md) for the
+See [performance-evidence.md](performance-evidence.md) for the
 exact-commit Windows loopback engineering result and its explicit limitations.
