@@ -11,8 +11,9 @@ claim.
 - `.github/workflows/security-audit.yml` runs the official RustSec audit action
   when a Cargo manifest or lockfile changes, on manual request, and weekly
   against the current default branch.
-- `.github/dependabot.yml` checks the root Cargo dependencies, fuzz-harness
-  dependencies, and GitHub Actions versions every week.
+- GitHub vulnerability alerts are enabled for repository-level dependency
+  monitoring. Dependency upgrades remain deliberate, reviewed changes so the
+  repository keeps its two-branch structure.
 
 Accepted risk: an advisory scan covers published RustSec advisories; it is not
 an independent source review, license-policy audit, or guarantee that every

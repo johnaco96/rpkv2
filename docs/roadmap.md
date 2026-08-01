@@ -39,6 +39,7 @@ known limits, not a production-readiness claim.
 - Retain remote CI evidence for each release-candidate commit.
 - Add an explicit dependency license policy if the project moves beyond a
   personal research release.
-- Keep automated dependency updates and RustSec advisory checks healthy.
+- Keep GitHub vulnerability alerts and RustSec advisory checks healthy, and
+  review dependency upgrades as focused changes.
 - Keep the README's implementation and limitation lists synchronized with
   executable tests.
